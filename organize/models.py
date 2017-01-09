@@ -6,6 +6,7 @@ from django.db import models, transaction
 from django.utils import timezone
 from django_date_extensions.fields import ApproximateDateField
 
+from core.deploy_event import copy_event
 from core.models import Event
 from core.validators import validate_approximatedate
 
@@ -105,9 +106,10 @@ class EventApplication(models.Model):
 
         self.change_status_to(DEPLOYED)
 
-        # TODO: we should recognize here if we should create a new event,
-        # copy old one or copy old and change organizaers.
-        event = self.create_event()
+        if self.previous_event:
+            event = copy_event(self.previous_event, self.date)
+        else:
+            event = self.create_event()
 
         # TODO: use method created in separate branch to create gmail acconut
         # and get password from it.
@@ -116,8 +118,8 @@ class EventApplication(models.Model):
         # add main organizer of the Event
         main_organizer = event.add_organizer(
             self.main_organizer_email,
-            self.first_name,
-            self.last_name,
+            self.main_organizer_first_name,
+            self.main_organizer_last_name,
         )
         event.main_organizer = main_organizer
         event.save()
