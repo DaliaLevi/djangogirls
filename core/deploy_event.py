@@ -44,17 +44,9 @@ def copy_content_from_previous_event(previous_event, new_event):
     """
     previous_event.refresh_from_db()
     for obj in previous_event.content.all():
-        # fetch related objects before we change pk of the event
-        coaches = obj.coaches.all()
-        sponsors = obj.sponsors.all()
-
         new_content = obj
         new_content.id = None
         new_content.event = new_event
-        new_content.save()
-
-        new_content.coaches = coaches
-        new_content.sponsors = sponsors
         new_content.save()
 
 
